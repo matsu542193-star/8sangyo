@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Googleマップ投稿文AI生成ツール | MEO×AIコンサル</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f4f6fa; color: #1a2e4a; min-height: 100vh; }
+
+  header { background: #1a2e4a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+  header .badge { background: #d4a017; color: #1a2e4a; font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+  .api-bar { background: #243b5a; padding: 10px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .api-bar label { color: #ccc; font-size: 0.8rem; white-space: nowrap; }
+  .api-bar input { flex: 1; min-width: 200px; padding: 6px 10px; border-radius: 6px; border: none; font-size: 0.85rem; background: #1a2e4a; color: #fff; }
+  .api-bar button { background: #d4a017; color: #1a2e4a; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+
+  nav { background: #fff; border-bottom: 2px solid #e8ecf2; display: flex; overflow-x: auto; }
+  nav a { padding: 12px 20px; text-decoration: none; color: #666; font-size: 0.85rem; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  nav a:hover { color: #1a2e4a; }
+  nav a.active { color: #1a2e4a; font-weight: 700; border-bottom-color: #d4a017; }
+
+  .container { max-width: 900px; margin: 32px auto; padding: 0 16px 60px; }
+
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(26,46,74,0.08); padding: 28px; margin-bottom: 24px; }
+  .card h2 { font-size: 1rem; font-weight: 700; color: #1a2e4a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: ''; width: 4px; height: 20px; background: #d4a017; border-radius: 2px; display: inline-block; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.82rem; font-weight: 500; color: #445; }
+  select, input[type="text"] { padding: 10px 12px; border: 1.5px solid #dde3ee; border-radius: 8px; font-size: 0.9rem; font-family: inherit; color: #1a2e4a; background: #fafbfd; transition: border-color 0.2s; outline: none; }
+  select:focus, input:focus { border-color: #1a2e4a; background: #fff; }
+
+  .purpose-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .purpose-btn { background: none; border: 1.5px solid #dde3ee; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; font-family: inherit; color: #666; transition: all 0.2s; }
+  .purpose-btn.active { background: #1a2e4a; border-color: #1a2e4a; color: #fff; font-weight: 700; }
+  .purpose-btn:hover { border-color: #1a2e4a; }
+
+  .generate-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #1a2e4a, #243b5a); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; margin-top: 8px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .patterns-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+  .pattern-card { border: 1.5px solid #dde3ee; border-radius: 10px; overflow: hidden; }
+  .pattern-header { background: #1a2e4a; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .pattern-header .label { font-size: 0.82rem; font-weight: 700; }
+  .pattern-header .char { font-size: 0.75rem; color: #d4a017; }
+  .pattern-body { padding: 16px; font-size: 0.9rem; line-height: 1.8; white-space: pre-wrap; color: #1a2e4a; min-height: 60px; }
+  .pattern-body.empty { color: #aaa; font-style: italic; }
+  .pattern-footer { padding: 8px 16px 12px; display: flex; justify-content: flex-end; }
+  .copy-btn { background: #d4a017; color: #1a2e4a; border: none; padding: 7px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.82rem; font-family: inherit; transition: opacity 0.2s; }
+  .copy-btn:hover { opacity: 0.85; }
+  .copy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .loading { display: none; text-align: center; padding: 40px; color: #1a2e4a; }
+  .loading.show { display: block; }
+  .spinner { width: 36px; height: 36px; border: 4px solid #e8ecf2; border-top-color: #1a2e4a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg { color: #c0392b; font-size: 0.85rem; background: #fff5f5; border: 1px solid #fcc; border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a2e4a; color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 0.85rem; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐝 MEO×AIコンサル｜蜂の巣駆除産業</h1>
+  <span class="badge">飯能・入間・所沢・青梅・坂戸熊谷</span>
+</header>
+
+<div class="api-bar">
+  <label>Anthropic APIキー</label>
+  <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off">
+  <button onclick="saveApiKey()">保存</button>
+</div>
+
+<nav>
+  <a href="tool1-review-reply.html">口コミ返信</a>
+  <a href="tool2-gbp-post.html" class="active">GBP投稿文</a>
+  <a href="tool3-keyword.html">MEOキーワード</a>
+  <a href="tool4-report.html">月次レポート</a>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h2>Googleマップ投稿文AI生成ツール</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>業種</label>
+        <select id="industry">
+          <option value="蜂の巣駆除">蜂の巣駆除</option>
+          <option value="害虫駆除">害虫駆除</option>
+          <option value="害獣駆除">害獣駆除</option>
+          <option value="清掃業">清掃業</option>
+          <option value="リフォーム">リフォーム</option>
+          <option value="飲食店">飲食店</option>
+          <option value="美容院">美容院</option>
+          <option value="整体・治療院">整体・治療院</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>季節</label>
+        <select id="season">
+          <option value="春（3〜5月）">春（3〜5月）</option>
+          <option value="夏（6〜8月）">夏（6〜8月）</option>
+          <option value="秋（9〜11月）">秋（9〜11月）</option>
+          <option value="冬（12〜2月）">冬（12〜2月）</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>エリア</label>
+        <input type="text" id="area" placeholder="例：埼玉県飯能市">
+      </div>
+      <div class="form-group">
+        <label>店舗名（任意）</label>
+        <input type="text" id="shopName" placeholder="例：蜂の巣駆除産業">
+      </div>
+      <div class="form-group full">
+        <label>投稿の目的</label>
+        <div class="purpose-btns">
+          <button class="purpose-btn active" data-val="集客" onclick="setPurpose(this)">🎯 集客</button>
+          <button class="purpose-btn" data-val="告知" onclick="setPurpose(this)">📢 告知・お知らせ</button>
+          <button class="purpose-btn" data-val="実績紹介" onclick="setPurpose(this)">🏆 実績紹介</button>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>追加情報・アピールポイント（任意）</label>
+        <input type="text" id="extra" placeholder="例：即日対応可、見積無料、地域最安値など">
+      </div>
+    </div>
+    <button class="generate-btn" onclick="generatePosts()" id="genBtn">
+      <span>✨ 投稿文を3パターン生成する</span>
+    </button>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <h2>生成された投稿文（3パターン）</h2>
+    <div class="loading" id="loading"><div class="spinner"></div>AIが投稿文を生成中...</div>
+    <div class="patterns-grid" id="patternsGrid">
+      <div class="pattern-card">
+        <div class="pattern-header"><span class="label">パターン 1</span><span class="char" id="c1">-文字</span></div>
+        <div class="pattern-body empty" id="p1">投稿文がここに表示されます</div>
+        <div class="pattern-footer"><button class="copy-btn" onclick="copyPattern(1)" id="cp1" disabled>📋 コピー</button></div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-header"><span class="label">パターン 2</span><span class="char" id="c2">-文字</span></div>
+        <div class="pattern-body empty" id="p2">投稿文がここに表示されます</div>
+        <div class="pattern-footer"><button class="copy-btn" onclick="copyPattern(2)" id="cp2" disabled>📋 コピー</button></div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-header"><span class="label">パターン 3</span><span class="char" id="c3">-文字</span></div>
+        <div class="pattern-body empty" id="p3">投稿文がここに表示されます</div>
+        <div class="pattern-footer"><button class="copy-btn" onclick="copyPattern(3)" id="cp3" disabled>📋 コピー</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentPurpose = '集客';
+
+function saveApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (key) { localStorage.setItem('anthropic_api_key', key); showToast('APIキーを保存しました'); }
+}
+window.onload = () => {
+  const saved = localStorage.getItem('anthropic_api_key');
+  if (saved) document.getElementById('apiKey').value = saved;
+  setSeason();
+};
+
+function setSeason() {
+  const m = new Date().getMonth() + 1;
+  const s = document.getElementById('season');
+  if (m >= 3 && m <= 5) s.value = '春（3〜5月）';
+  else if (m >= 6 && m <= 8) s.value = '夏（6〜8月）';
+  else if (m >= 9 && m <= 11) s.value = '秋（9〜11月）';
+  else s.value = '冬（12〜2月）';
+}
+
+function setPurpose(btn) {
+  currentPurpose = btn.dataset.val;
+  document.querySelectorAll('.purpose-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function generatePosts() {
+  const apiKey = document.getElementById('apiKey').value.trim() || localStorage.getItem('anthropic_api_key');
+  if (!apiKey) { showError('APIキーを入力してください。'); return; }
+
+  const industry = document.getElementById('industry').value;
+  const season = document.getElementById('season').value;
+  const area = document.getElementById('area').value || '埼玉県';
+  const shopName = document.getElementById('shopName').value || industry;
+  const extra = document.getElementById('extra').value;
+
+  hideError();
+  setLoading(true);
+
+  const prompt = `あなたはMEO・Googleビジネスプロフィール（GBP）の専門家です。
+以下の条件でGoogleマップの投稿文を3パターン作成してください。
+
+【条件】
+- 業種: ${industry}
+- 店舗名: ${shopName}
+- エリア: ${area}
+- 季節: ${season}
+- 投稿目的: ${currentPurpose}
+${extra ? `- アピールポイント: ${extra}` : ''}
+
+【投稿文の要件】
+- 各パターン300文字以内
+- 関連するハッシュタグを3〜5個含める（#で始まる）
+- 末尾にCTA（行動喚起）を入れる（例：お気軽にご連絡ください、詳しくはプロフィールへ等）
+- 各パターンはトーンを変える（例：フレンドリー/プロフェッショナル/緊急性訴求）
+- 自然な日本語で読みやすく
+
+以下のJSON形式で出力してください（前置き・説明不要）：
+{
+  "patterns": [
+    {"tone": "フレンドリー", "text": "投稿文1"},
+    {"tone": "プロフェッショナル", "text": "投稿文2"},
+    {"tone": "緊急性訴求", "text": "投稿文3"}
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `APIエラー: ${res.status}`); }
+
+    const data = await res.json();
+    const raw = data.content[0].text;
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('レスポンスの解析に失敗しました');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    parsed.patterns.forEach((p, i) => {
+      const n = i + 1;
+      const el = document.getElementById('p' + n);
+      el.textContent = p.text;
+      el.classList.remove('empty');
+      document.getElementById('c' + n).textContent = p.text.length + '文字';
+      document.getElementById('cp' + n).disabled = false;
+    });
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(v) {
+  document.getElementById('loading').classList.toggle('show', v);
+  document.getElementById('patternsGrid').style.display = v ? 'none' : 'grid';
+  document.getElementById('genBtn').disabled = v;
+}
+
+function copyPattern(n) {
+  const text = document.getElementById('p' + n).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('パターン' + n + 'をコピーしました'));
+}
+
+function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = '⚠ ' + msg; el.style.display = 'block'; }
+function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

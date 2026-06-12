@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEOキーワードチェッカー | MEO×AIコンサル</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f4f6fa; color: #1a2e4a; min-height: 100vh; }
+
+  header { background: #1a2e4a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+  header .badge { background: #d4a017; color: #1a2e4a; font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+  .api-bar { background: #243b5a; padding: 10px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .api-bar label { color: #ccc; font-size: 0.8rem; white-space: nowrap; }
+  .api-bar input { flex: 1; min-width: 200px; padding: 6px 10px; border-radius: 6px; border: none; font-size: 0.85rem; background: #1a2e4a; color: #fff; }
+  .api-bar button { background: #d4a017; color: #1a2e4a; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+
+  nav { background: #fff; border-bottom: 2px solid #e8ecf2; display: flex; overflow-x: auto; }
+  nav a { padding: 12px 20px; text-decoration: none; color: #666; font-size: 0.85rem; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  nav a:hover { color: #1a2e4a; }
+  nav a.active { color: #1a2e4a; font-weight: 700; border-bottom-color: #d4a017; }
+
+  .container { max-width: 920px; margin: 32px auto; padding: 0 16px 60px; }
+
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(26,46,74,0.08); padding: 28px; margin-bottom: 24px; }
+  .card h2 { font-size: 1rem; font-weight: 700; color: #1a2e4a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: ''; width: 4px; height: 20px; background: #d4a017; border-radius: 2px; display: inline-block; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.82rem; font-weight: 500; color: #445; }
+  select, input[type="text"] { padding: 10px 12px; border: 1.5px solid #dde3ee; border-radius: 8px; font-size: 0.9rem; font-family: inherit; color: #1a2e4a; background: #fafbfd; transition: border-color 0.2s; outline: none; }
+  select:focus, input:focus { border-color: #1a2e4a; background: #fff; }
+
+  .generate-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #1a2e4a, #243b5a); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; margin-top: 8px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .loading { display: none; text-align: center; padding: 40px; color: #1a2e4a; }
+  .loading.show { display: block; }
+  .spinner { width: 36px; height: 36px; border: 4px solid #e8ecf2; border-top-color: #1a2e4a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .section-title { font-size: 0.88rem; font-weight: 700; color: #1a2e4a; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e8ecf2; }
+
+  .kw-section { margin-bottom: 24px; }
+  .intent-label { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-bottom: 10px; }
+  .intent-label.type1 { background: #e8f4fd; color: #1a6fbf; }
+  .intent-label.type2 { background: #edf8e8; color: #2e7d32; }
+  .intent-label.type3 { background: #fff3e0; color: #e65100; }
+  .intent-label.type4 { background: #f3e5f5; color: #7b1fa2; }
+
+  .kw-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kw-chip { background: #f0f4ff; border: 1px solid #c8d8f0; color: #1a2e4a; padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; user-select: none; }
+  .kw-chip:hover { background: #1a2e4a; color: #fff; }
+  .kw-chip.competitor { background: #fff8e1; border-color: #f0d060; color: #7a5a00; }
+  .kw-chip.competitor:hover { background: #d4a017; color: #fff; }
+
+  .gbp-template { background: #f8faff; border: 1.5px solid #dde3ee; border-radius: 10px; padding: 18px; font-size: 0.9rem; line-height: 1.8; white-space: pre-wrap; color: #1a2e4a; }
+
+  .section-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .copy-btn { background: #d4a017; color: #1a2e4a; border: none; padding: 7px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.82rem; font-family: inherit; transition: opacity 0.2s; }
+  .copy-btn:hover { opacity: 0.85; }
+
+  .error-msg { color: #c0392b; font-size: 0.85rem; background: #fff5f5; border: 1px solid #fcc; border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a2e4a; color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 0.85rem; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .copy-hint { font-size: 0.75rem; color: #999; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐝 MEO×AIコンサル｜蜂の巣駆除産業</h1>
+  <span class="badge">飯能・入間・所沢・青梅・坂戸熊谷</span>
+</header>
+
+<div class="api-bar">
+  <label>Anthropic APIキー</label>
+  <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off">
+  <button onclick="saveApiKey()">保存</button>
+</div>
+
+<nav>
+  <a href="tool1-review-reply.html">口コミ返信</a>
+  <a href="tool2-gbp-post.html">GBP投稿文</a>
+  <a href="tool3-keyword.html" class="active">MEOキーワード</a>
+  <a href="tool4-report.html">月次レポート</a>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h2>MEOキーワードチェッカー</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>業種</label>
+        <select id="industry">
+          <option value="蜂の巣駆除">蜂の巣駆除</option>
+          <option value="害虫駆除">害虫駆除</option>
+          <option value="害獣駆除">害獣駆除</option>
+          <option value="清掃業">清掃業</option>
+          <option value="リフォーム">リフォーム</option>
+          <option value="飲食店">飲食店</option>
+          <option value="美容院">美容院</option>
+          <option value="整体・治療院">整体・治療院</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>エリア（市区町村）</label>
+        <input type="text" id="area" placeholder="例：飯能市、入間市">
+      </div>
+      <div class="form-group full">
+        <label>メインサービス</label>
+        <input type="text" id="service" placeholder="例：アシナガバチ・スズメバチの駆除、即日対応">
+      </div>
+    </div>
+    <button class="generate-btn" onclick="generateKeywords()" id="genBtn">
+      <span>🔍 MEOキーワードを分析する</span>
+    </button>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+  </div>
+
+  <div class="loading" id="loading"><div class="spinner"></div>AIがキーワードを分析中...</div>
+
+  <div class="results" id="results">
+    <div class="card">
+      <h2>推奨MEOキーワード（20個）</h2>
+      <p class="copy-hint">キーワードをクリックするとコピーできます</p>
+
+      <div class="kw-section" id="kwSection1">
+        <div class="intent-label type1" id="intentLabel1">情報収集系</div>
+        <div class="kw-chips" id="kwChips1"></div>
+      </div>
+      <div class="kw-section" id="kwSection2">
+        <div class="intent-label type2" id="intentLabel2">比較検討系</div>
+        <div class="kw-chips" id="kwChips2"></div>
+      </div>
+      <div class="kw-section" id="kwSection3">
+        <div class="intent-label type3" id="intentLabel3">購買・依頼系</div>
+        <div class="kw-chips" id="kwChips3"></div>
+      </div>
+      <div class="kw-section" id="kwSection4">
+        <div class="intent-label type4" id="intentLabel4">緊急・近接系</div>
+        <div class="kw-chips" id="kwChips4"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>競合が使いそうなキーワード</h2>
+      <p class="copy-hint">クリックでコピー</p>
+      <div class="kw-chips" id="competitorChips"></div>
+    </div>
+
+    <div class="card">
+      <h2>GBP説明文テンプレート</h2>
+      <div class="gbp-template" id="gbpTemplate"></div>
+      <div class="section-actions">
+        <button class="copy-btn" onclick="copyGbp()">📋 説明文をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function saveApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (key) { localStorage.setItem('anthropic_api_key', key); showToast('APIキーを保存しました'); }
+}
+window.onload = () => {
+  const saved = localStorage.getItem('anthropic_api_key');
+  if (saved) document.getElementById('apiKey').value = saved;
+};
+
+async function generateKeywords() {
+  const apiKey = document.getElementById('apiKey').value.trim() || localStorage.getItem('anthropic_api_key');
+  if (!apiKey) { showError('APIキーを入力してください。'); return; }
+
+  const industry = document.getElementById('industry').value;
+  const area = document.getElementById('area').value || '市区町村';
+  const service = document.getElementById('service').value || industry;
+
+  hideError();
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('genBtn').disabled = true;
+
+  const prompt = `あなたはMEO（マップエンジン最適化）の専門家です。
+以下の条件でMEOキーワード分析を行ってください。
+
+【条件】
+- 業種: ${industry}
+- エリア: ${area}
+- メインサービス: ${service}
+
+以下のJSON形式で出力してください（前置き・説明不要）：
+{
+  "recommended": {
+    "info": {"label": "情報収集系", "keywords": ["kw1", "kw2", "kw3", "kw4", "kw5"]},
+    "compare": {"label": "比較検討系", "keywords": ["kw1", "kw2", "kw3", "kw4", "kw5"]},
+    "purchase": {"label": "購買・依頼系", "keywords": ["kw1", "kw2", "kw3", "kw4", "kw5"]},
+    "urgent": {"label": "緊急・近接系", "keywords": ["kw1", "kw2", "kw3", "kw4", "kw5"]}
+  },
+  "competitor": ["kw1", "kw2", "kw3", "kw4", "kw5", "kw6", "kw7", "kw8"],
+  "gbp_description": "GBPの説明文テンプレート（750文字以内、${area}の${industry}専門店として自然な文章で、主要キーワードを含む）"
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `APIエラー: ${res.status}`); }
+
+    const data = await res.json();
+    const raw = data.content[0].text;
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('レスポンスの解析に失敗しました');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    renderKeywords(parsed);
+    document.getElementById('results').classList.add('show');
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('genBtn').disabled = false;
+  }
+}
+
+function renderKeywords(data) {
+  const cats = [
+    { key: 'info', idx: 1, cls: 'type1' },
+    { key: 'compare', idx: 2, cls: 'type2' },
+    { key: 'purchase', idx: 3, cls: 'type3' },
+    { key: 'urgent', idx: 4, cls: 'type4' }
+  ];
+  cats.forEach(cat => {
+    const d = data.recommended[cat.key];
+    document.getElementById('intentLabel' + cat.idx).textContent = d.label;
+    document.getElementById('intentLabel' + cat.idx).className = 'intent-label ' + cat.cls;
+    const chips = document.getElementById('kwChips' + cat.idx);
+    chips.innerHTML = '';
+    d.keywords.forEach(kw => {
+      const el = document.createElement('span');
+      el.className = 'kw-chip';
+      el.textContent = kw;
+      el.onclick = () => { navigator.clipboard.writeText(kw); showToast(kw + ' をコピーしました'); };
+      chips.appendChild(el);
+    });
+  });
+
+  const compChips = document.getElementById('competitorChips');
+  compChips.innerHTML = '';
+  data.competitor.forEach(kw => {
+    const el = document.createElement('span');
+    el.className = 'kw-chip competitor';
+    el.textContent = kw;
+    el.onclick = () => { navigator.clipboard.writeText(kw); showToast(kw + ' をコピーしました'); };
+    compChips.appendChild(el);
+  });
+
+  document.getElementById('gbpTemplate').textContent = data.gbp_description;
+}
+
+function copyGbp() {
+  const text = document.getElementById('gbpTemplate').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('説明文をコピーしました'));
+}
+
+function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = '⚠ ' + msg; el.style.display = 'block'; }
+function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEO×AIコンサル ツール群 | 蜂の巣駆除産業</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f4f6fa; color: #1a2e4a; min-height: 100vh; }
+
+  header { background: #1a2e4a; color: #fff; padding: 24px 32px; }
+  header h1 { font-size: 1.3rem; font-weight: 700; }
+  header p { font-size: 0.85rem; color: #a8c0d8; margin-top: 6px; }
+
+  .container { max-width: 900px; margin: 40px auto; padding: 0 16px 60px; }
+
+  .hero { background: linear-gradient(135deg, #1a2e4a, #243b5a); color: #fff; border-radius: 16px; padding: 36px 32px; margin-bottom: 36px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .hero .icon { font-size: 3rem; }
+  .hero h2 { font-size: 1.4rem; font-weight: 700; }
+  .hero p { font-size: 0.9rem; color: #a8c0d8; margin-top: 8px; line-height: 1.7; }
+  .hero .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .hero .badge { background: #d4a017; color: #1a2e4a; font-size: 0.72rem; font-weight: 700; padding: 3px 12px; border-radius: 20px; }
+
+  .tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (max-width: 600px) { .tools-grid { grid-template-columns: 1fr; } }
+
+  .tool-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(26,46,74,0.08); padding: 24px; text-decoration: none; color: inherit; transition: all 0.2s; border: 2px solid transparent; display: flex; flex-direction: column; gap: 10px; }
+  .tool-card:hover { border-color: #d4a017; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,46,74,0.12); }
+  .tool-card .num { font-size: 0.72rem; font-weight: 700; color: #d4a017; background: #fff8e1; padding: 2px 10px; border-radius: 20px; align-self: flex-start; }
+  .tool-card .tool-icon { font-size: 2rem; }
+  .tool-card h3 { font-size: 1rem; font-weight: 700; color: #1a2e4a; }
+  .tool-card p { font-size: 0.82rem; color: #666; line-height: 1.7; flex: 1; }
+  .tool-card .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tool-card .tag { font-size: 0.72rem; background: #f0f4ff; color: #1a2e4a; padding: 2px 10px; border-radius: 20px; }
+  .tool-card .arrow { color: #d4a017; font-weight: 700; font-size: 0.85rem; align-self: flex-end; }
+
+  footer { text-align: center; padding: 24px; font-size: 0.78rem; color: #999; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐝 MEO×AIコンサル｜蜂の巣駆除産業</h1>
+  <p>埼玉県飯能市 松木裕和（ヒロ）代表 ｜ 地域事業者向けMEO×AIコンサルツール群</p>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <div class="icon">🗺️</div>
+    <div>
+      <h2>MEO×AI コンサルツール群</h2>
+      <p>Googleビジネスプロフィール（GBP）の運用を効率化する<br>AI搭載ツール4本セット。埼玉5支部の地域事業者をサポート。</p>
+      <div class="badges">
+        <span class="badge">飯能支部</span>
+        <span class="badge">入間支部</span>
+        <span class="badge">所沢支部</span>
+        <span class="badge">青梅支部</span>
+        <span class="badge">坂戸熊谷支部</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tools-grid">
+    <a href="tool1-review-reply.html" class="tool-card">
+      <span class="num">Tool 1</span>
+      <span class="tool-icon">💬</span>
+      <h3>口コミ自動返信ジェネレーター</h3>
+      <p>Googleマップの口コミに対してAIが丁寧な返信文を自動生成。星評価・業種・支部エリアを選ぶだけで200文字以内の返信文が完成。</p>
+      <div class="tags">
+        <span class="tag">5支部対応</span>
+        <span class="tag">星評価別</span>
+        <span class="tag">コピーボタン</span>
+      </div>
+      <span class="arrow">使ってみる →</span>
+    </a>
+
+    <a href="tool2-gbp-post.html" class="tool-card">
+      <span class="num">Tool 2</span>
+      <span class="tool-icon">📝</span>
+      <h3>Googleマップ投稿文AI生成</h3>
+      <p>GBP（Googleビジネスプロフィール）への投稿文を3パターン自動生成。ハッシュタグ・CTA付きで集客/告知/実績紹介に対応。</p>
+      <div class="tags">
+        <span class="tag">3パターン生成</span>
+        <span class="tag">300文字以内</span>
+        <span class="tag">ハッシュタグ自動</span>
+      </div>
+      <span class="arrow">使ってみる →</span>
+    </a>
+
+    <a href="tool3-keyword.html" class="tool-card">
+      <span class="num">Tool 3</span>
+      <span class="tool-icon">🔍</span>
+      <h3>MEOキーワードチェッカー</h3>
+      <p>業種・エリア・サービスを入力すると推奨MEOキーワード20個と競合キーワード、GBP説明文テンプレートを自動生成。</p>
+      <div class="tags">
+        <span class="tag">20キーワード</span>
+        <span class="tag">検索意図分類</span>
+        <span class="tag">GBP説明文</span>
+      </div>
+      <span class="arrow">使ってみる →</span>
+    </a>
+
+    <a href="tool4-report.html" class="tool-card">
+      <span class="num">Tool 4</span>
+      <span class="tool-icon">📊</span>
+      <h3>月次MEOレポート自動生成</h3>
+      <p>閲覧数・検索数・電話タップ数などを入力するとKPIサマリー・前月比グラフ・AI改善提案付きのレポートを自動生成。印刷/PDF対応。</p>
+      <div class="tags">
+        <span class="tag">Chart.jsグラフ</span>
+        <span class="tag">AI改善提案</span>
+        <span class="tag">PDF印刷対応</span>
+      </div>
+      <span class="arrow">使ってみる →</span>
+    </a>
+  </div>
+</div>
+
+<footer>© 蜂の巣駆除産業 MEO×AIコンサル ｜ Powered by Anthropic Claude</footer>
+
+</body>
+</html>
