@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <script>
+  (function(){
+     var PASS='8000';
+     var KEY='auth_8sangyo';
+     if(sessionStorage.getItem(KEY)!=='1'){
+          var overlay=document.createElement('div');
+          overlay.id='pw-overlay';
+          overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#1a2e4a;display:flex;align-items:center;justify-content:center;z-index:99999';
+          overlay.innerHTML='<div style="background:#fff;border-radius:16px;padding:40px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)"><div style="font-size:2.5rem;margin-bottom:12px">&#128272;</div><h2 style="color:#1a2e4a;font-family:sans-serif;margin-bottom:8px">MEO&#215;AIコンサルツール</h2><p style="color:#666;font-size:0.85rem;font-family:sans-serif;margin-bottom:20px">パスワードを入力してください</p><input id="pw-input" type="password" placeholder="パスワード" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;outline:none;box-sizing:border-box;margin-bottom:12px"><div id="pw-err" style="color:#c00;font-size:0.8rem;font-family:sans-serif;min-height:18px;margin-bottom:8px"></div><button id="pw-btn" style="width:100%;padding:12px;background:#d4a017;color:#1a2e4a;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;font-family:sans-serif">入る &#8594;</button></div>';
+          document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(overlay);document.getElementById('pw-input').focus();});
+          function checkPw(){var v=document.getElementById('pw-input').value;if(v===PASS){sessionStorage.setItem(KEY,'1');document.getElementById('pw-overlay').remove();}else{document.getElementById('pw-err').textContent='パスワードが違います';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}}
+          document.addEventListener('DOMContentLoaded',function(){document.getElementById('pw-btn').addEventListener('click',checkPw);document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPw();});});
+     }
+  })();
+ </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI導入・初期設定サポート | MEO×AIコンサル</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f4f6fa; color: #1a2e4a; min-height: 100vh; }
+
+  header { background: #1a2e4a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+  header .badge { background: #d4a017; color: #1a2e4a; font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+  .api-bar { background: #243b5a; padding: 10px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .api-bar label { color: #ccc; font-size: 0.8rem; white-space: nowrap; }
+  .api-bar input { flex: 1; min-width: 200px; padding: 6px 10px; border-radius: 6px; border: none; font-size: 0.85rem; background: #1a2e4a; color: #fff; }
+  .api-bar button { background: #d4a017; color: #1a2e4a; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+
+  nav { background: #fff; border-bottom: 2px solid #e8ecf2; display: flex; overflow-x: auto; }
+  nav a { padding: 12px 20px; text-decoration: none; color: #666; font-size: 0.85rem; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  nav a:hover { color: #1a2e4a; }
+  nav a.active { color: #1a2e4a; font-weight: 700; border-bottom-color: #d4a017; }
+
+  .container { max-width: 960px; margin: 32px auto; padding: 0 16px 80px; }
+
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(26,46,74,0.08); padding: 28px; margin-bottom: 24px; }
+  .card h2 { font-size: 1rem; font-weight: 700; color: #1a2e4a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: ''; width: 4px; height: 20px; background: #d4a017; border-radius: 2px; display: inline-block; }
+
+  .section-label { font-size: 0.75rem; font-weight: 700; color: #d4a017; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid #f0e0a0; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.82rem; font-weight: 500; color: #445; }
+  label .hint { font-weight: 400; color: #999; font-size: 0.75rem; margin-left: 4px; }
+  input[type="text"], select, textarea {
+    padding: 10px 12px; border: 1.5px solid #dde3ee; border-radius: 8px;
+    font-size: 0.9rem; font-family: inherit; color: #1a2e4a;
+    background: #fafbfd; transition: border-color 0.2s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #1a2e4a; background: #fff; }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 640px) { .checkbox-grid { grid-template-columns: 1fr; } }
+  .checkbox-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border: 1.5px solid #dde3ee; border-radius: 8px; background: #fafbfd; cursor: pointer; transition: all 0.2s; }
+  .checkbox-item:hover { border-color: #d4a017; }
+  .checkbox-item input { width: 16px; height: 16px; margin-top: 2px; accent-color: #1a2e4a; }
+  .checkbox-item span { font-size: 0.85rem; color: #1a2e4a; line-height: 1.4; }
+  .checkbox-item.checked { background: #fff8e1; border-color: #d4a017; }
+
+  .generate-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #1a2e4a, #243b5a); color: #fff; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .loading { display: none; text-align: center; padding: 60px 40px; color: #1a2e4a; }
+  .loading.show { display: block; }
+  .spinner { width: 40px; height: 40px; border: 4px solid #e8ecf2; border-top-color: #1a2e4a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { font-size: 0.9rem; color: #666; margin-top: 8px; }
+
+  .error-msg { color: #c0392b; font-size: 0.85rem; background: #fff5f5; border: 1px solid #fcc; border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
+
+  .result-wrapper { display: none; }
+  .result-wrapper.show { display: block; }
+
+  /* Readiness banner */
+  .readiness-banner { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .readiness-circle { width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.8rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #1a2e4a, #243b5a); }
+  .readiness-meta { flex: 1; min-width: 200px; }
+  .readiness-meta .level-badge { display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 3px 14px; border-radius: 20px; margin-bottom: 8px; background: #fff8e1; color: #b8860b; border: 1px solid #f0e0a0; }
+  .readiness-meta h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+  .readiness-meta p { font-size: 0.88rem; color: #555; line-height: 1.7; }
+
+  /* Checklist (prep) */
+  .checklist { display: flex; flex-direction: column; gap: 10px; }
+  .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-radius: 8px; font-size: 0.87rem; line-height: 1.6; }
+  .check-item.ok { background: #f0faf0; border: 1px solid #b2dfdb; }
+  .check-item.warn { background: #fff8e1; border: 1px solid #ffe082; }
+  .check-item.ng { background: #fff5f5; border: 1px solid #ffcdd2; }
+  .check-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .check-text strong { display: block; font-weight: 700; margin-bottom: 2px; color: #1a2e4a; }
+  .check-text span { color: #666; font-size: 0.82rem; }
+
+  /* Roadmap */
+  .roadmap-list { display: flex; flex-direction: column; gap: 14px; }
+  .roadmap-item { border: 1.5px solid #e8ecf2; border-radius: 10px; padding: 16px 18px; background: #fafbfd; }
+  .roadmap-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .roadmap-order { background: #1a2e4a; color: #fff; font-size: 0.8rem; font-weight: 700; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .roadmap-head .tool-icon { font-size: 1.2rem; }
+  .roadmap-head h4 { font-size: 0.95rem; font-weight: 700; color: #1a2e4a; flex: 1; }
+  .roadmap-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .roadmap-tag { font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; background: #f0f4ff; color: #1a2e4a; white-space: nowrap; }
+  .roadmap-why { font-size: 0.83rem; color: #555; line-height: 1.6; margin-bottom: 10px; }
+  .roadmap-steps { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .roadmap-steps li { font-size: 0.83rem; color: #1a2e4a; line-height: 1.6; padding-left: 22px; position: relative; }
+  .roadmap-steps li::before { content: '→'; position: absolute; left: 0; color: #d4a017; font-weight: 700; }
+
+  /* Pitfalls */
+  .priority-list { display: flex; flex-direction: column; gap: 12px; }
+  .priority-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 10px; border-left: 4px solid; background: #fff8e1; border-color: #f9a825; }
+  .priority-content strong { font-size: 0.9rem; font-weight: 700; color: #1a2e4a; display: block; margin-bottom: 4px; }
+  .priority-content p { font-size: 0.83rem; color: #555; line-height: 1.65; }
+
+  /* Action plan table */
+  .action-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .action-table th { background: #1a2e4a; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.8rem; }
+  .action-table td { padding: 10px 14px; border-bottom: 1px solid #e8ecf2; vertical-align: top; line-height: 1.6; }
+  .action-table tr:last-child td { border-bottom: none; }
+  .action-table tr:hover td { background: #f8faff; }
+  .week-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+  .week-badge.w1 { background: #ffebee; color: #c62828; }
+  .week-badge.w2 { background: #fff3e0; color: #e65100; }
+  .week-badge.w3 { background: #e8f5e9; color: #2e7d32; }
+  .week-badge.w4 { background: #e8eaf6; color: #3949ab; }
+
+  /* Prompt templates */
+  .prompt-list { display: flex; flex-direction: column; gap: 10px; }
+  .prompt-row { padding: 12px 16px; background: #fafbfd; border: 1px solid #e8ecf2; border-radius: 8px; }
+  .prompt-situation { font-size: 0.83rem; font-weight: 700; color: #1a2e4a; margin-bottom: 6px; }
+  .prompt-text-row { display: flex; gap: 10px; align-items: flex-start; }
+  .prompt-text { flex: 1; font-size: 0.83rem; color: #444; line-height: 1.7; background: #fff; border: 1px solid #e8ecf2; border-radius: 6px; padding: 10px 12px; white-space: pre-wrap; }
+  .prompt-copy-btn { background: #d4a017; color: #1a2e4a; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.78rem; font-family: inherit; white-space: nowrap; }
+  .prompt-copy-btn:hover { opacity: 0.85; }
+
+  .result-actions { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .print-btn { background: #1a2e4a; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; font-family: inherit; }
+  .print-btn:hover { opacity: 0.85; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a2e4a; color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 0.85rem; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media print {
+    header, .api-bar, nav, .card:first-child, .result-actions, .generate-btn, .toast { display: none !important; }
+    .result-wrapper { display: block !important; }
+    body { background: #fff; }
+    .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐝 MEO×AIコンサル｜蜂の巣駆除産業</h1>
+  <span class="badge">飯能・入間・所沢・青梅・坂戸熊谷</span>
+</header>
+
+<div class="api-bar">
+  <label>Anthropic APIキー</label>
+  <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off">
+  <button onclick="saveApiKey()">保存</button>
+</div>
+
+<nav>
+  <a href="tool1-review-reply.html">口コミ返信</a>
+  <a href="tool2-gbp-post.html">GBP投稿文</a>
+  <a href="tool3-keyword.html">MEOキーワード</a>
+  <a href="tool4-report.html">月次レポート</a>
+  <a href="tool5-meo-analysis.html">MEO診断</a>
+  <a href="tool6-ai-setup.html" class="active">AI初期設定サポート</a>
+</nav>
+
+<div class="container">
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <h2>🛠️ AI導入・初期設定サポートツール</h2>
+
+    <!-- Step 1 -->
+    <div class="section-label">STEP 1 ― 基本情報</div>
+    <div class="form-grid" style="margin-bottom:20px;">
+      <div class="form-group">
+        <label>業種</label>
+        <select id="industry">
+          <option value="蜂の巣駆除">蜂の巣駆除</option>
+          <option value="害虫駆除">害虫駆除</option>
+          <option value="害獣駆除">害獣駆除</option>
+          <option value="清掃業">清掃業</option>
+          <option value="リフォーム・工務店">リフォーム・工務店</option>
+          <option value="飲食店">飲食店</option>
+          <option value="美容院・美容室">美容院・美容室</option>
+          <option value="整体・接骨院">整体・接骨院</option>
+          <option value="歯科医院">歯科医院</option>
+          <option value="士業（行政書士・税理士等）">士業（行政書士・税理士等）</option>
+          <option value="不動産">不動産</option>
+          <option value="教育・学習塾">教育・学習塾</option>
+          <option value="小売店">小売店</option>
+          <option value="製造業">製造業</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>支部エリア</label>
+        <select id="branch">
+          <option value="飯能">飯能支部</option>
+          <option value="入間">入間支部</option>
+          <option value="所沢">所沢支部</option>
+          <option value="青梅">青梅支部</option>
+          <option value="坂戸熊谷">坂戸熊谷支部</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>パソコン・スマホのスキル</label>
+        <select id="skillLevel">
+          <option value="beginner">ほとんど使わない・苦手</option>
+          <option value="basic" selected>基本操作はできる</option>
+          <option value="confident">得意・人に教えられるレベル</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>主な業務用デバイス</label>
+        <select id="device">
+          <option value="smartphone">スマホのみ</option>
+          <option value="both" selected>スマホとPC両方</option>
+          <option value="pc">PC中心</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="section-label">STEP 2 ― 現在の状況</div>
+    <div class="form-grid" style="margin-bottom:20px;">
+      <div class="form-group">
+        <label>Googleアカウント（事業用）</label>
+        <select id="googleAccount">
+          <option value="none">まだ作っていない</option>
+          <option value="personal">個人用しかない</option>
+          <option value="business">事業用に作成済み</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Googleビジネスプロフィール</label>
+        <select id="gbpStatus">
+          <option value="none">未登録</option>
+          <option value="registered_idle">登録したが放置している</option>
+          <option value="active">登録して運用中</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>AIツールの利用経験</label>
+        <select id="aiExperience">
+          <option value="none">全く使ったことがない</option>
+          <option value="heard">名前は知っている程度</option>
+          <option value="tried" selected>ChatGPTなど少し使ったことがある</option>
+          <option value="multiple">複数のAIツールを使っている</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>困っていること・不安なこと <span class="hint">（自由記述・任意）</span></label>
+        <textarea id="concerns" placeholder="例：何から手をつけていいか分からない、設定が複雑で挫折しそう、費用がどれくらいかかるか不安"></textarea>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="section-label">STEP 3 ― やりたいこと・目標</div>
+    <div class="checkbox-grid" style="margin-bottom:20px;" id="purposeGrid">
+      <label class="checkbox-item"><input type="checkbox" value="口コミへの返信文作成" checked><span>口コミへの返信文作成</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="SNS・Googleマップ投稿文の作成" checked><span>SNS・Googleマップ投稿文の作成</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="チラシ・POPなどの文章作成"><span>チラシ・POPなどの文章作成</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="画像・チラシデザインの作成"><span>画像・チラシデザインの作成</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="電話・問い合わせ対応の自動化"><span>電話・問い合わせ対応の自動化</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="議事録・打ち合わせメモの自動作成"><span>議事録・打ち合わせメモの自動作成</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="見積書・請求書作成の効率化"><span>見積書・請求書作成の効率化</span></label>
+      <label class="checkbox-item"><input type="checkbox" value="ホームページ・LP作成"><span>ホームページ・LP作成</span></label>
+    </div>
+    <div class="form-grid" style="margin-bottom:20px;">
+      <div class="form-group">
+        <label>1ヶ月にかけられる時間</label>
+        <select id="timeBudget">
+          <option value="almost_none">ほとんど時間がない</option>
+          <option value="1h_week" selected>週1時間程度</option>
+          <option value="2_3h_week">週2〜3時間</option>
+          <option value="5h_week">週5時間以上</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>予算感（月額）</label>
+        <select id="costBudget">
+          <option value="free">無料ツールのみ</option>
+          <option value="1000" selected>月1,000円程度まで</option>
+          <option value="5000">月5,000円程度まで</option>
+          <option value="10000">月1万円以上もOK</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>最終的に実現したいこと <span class="hint">（自由記述・任意）</span></label>
+        <textarea id="goal" placeholder="例：口コミ対応や投稿文作成にかける時間を減らして、本業に集中したい"></textarea>
+      </div>
+    </div>
+
+    <button class="generate-btn" onclick="runSetupSupport()" id="genBtn">
+      🛠️ AI初期設定サポートプランを生成する
+    </button>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <strong>AIが初期設定プランを作成中...</strong>
+    <p>準備物・導入順序・設定手順・30日プランを生成しています</p>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-wrapper" id="resultWrapper">
+    <div class="result-actions">
+      <button class="print-btn" onclick="window.print()">🖨️ 印刷 / PDF保存</button>
+    </div>
+
+    <div class="card" id="readinessCard">
+      <h2>📍 現在の準備状況</h2>
+      <div class="readiness-banner">
+        <div class="readiness-circle" id="readinessCircle">--</div>
+        <div class="readiness-meta">
+          <div class="level-badge" id="readinessLevel">--</div>
+          <h3 id="readinessTitle"></h3>
+          <p id="readinessSummary"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="prepCard">
+      <h2>✅ 始める前に準備するもの</h2>
+      <div class="checklist" id="prepItems"></div>
+    </div>
+
+    <div class="card" id="roadmapCard">
+      <h2>🗺️ ツール導入ロードマップ（順番に進めるだけ）</h2>
+      <div class="roadmap-list" id="roadmapItems"></div>
+    </div>
+
+    <div class="card" id="pitfallCard">
+      <h2>⚠️ よくある初期設定の落とし穴</h2>
+      <div class="priority-list" id="pitfallItems"></div>
+    </div>
+
+    <div class="card" id="planCard">
+      <h2>📅 30日サポートプラン</h2>
+      <div style="overflow-x:auto;">
+        <table class="action-table" id="planTable">
+          <thead>
+            <tr>
+              <th style="width:80px;">週</th>
+              <th>やること</th>
+              <th>達成目標</th>
+            </tr>
+          </thead>
+          <tbody id="planTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="promptCard">
+      <h2>💬 困った時にAIへ聞く質問テンプレート</h2>
+      <div class="prompt-list" id="promptItems"></div>
+    </div>
+
+  </div><!-- /result-wrapper -->
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer style="text-align:center;padding:24px 16px;font-size:0.78rem;color:#999;border-top:1px solid #e8ecf2;margin-top:8px;background:#fff;">
+  <strong style="color:#1a2e4a;">MEO×AI ツールズ by 蜂の巣駆除産業</strong><br>
+  運営：松木裕和（蜂の巣駆除産業）｜
+  <a href="https://8sangyo.com/" target="_blank" rel="noopener" style="color:#d4a017;">https://8sangyo.com/</a>｜
+  TEL：<a href="tel:07026706907" style="color:#d4a017;">070-2670-6907</a>
+</footer>
+
+<script>
+/* ===================== API KEY ===================== */
+function saveApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (key) { localStorage.setItem('anthropic_api_key', key); showToast('APIキーを保存しました'); }
+}
+window.onload = () => {
+  const saved = localStorage.getItem('anthropic_api_key');
+  if (saved) document.getElementById('apiKey').value = saved;
+  document.querySelectorAll('#purposeGrid .checkbox-item input').forEach(cb => {
+    cb.addEventListener('change', () => cb.closest('.checkbox-item').classList.toggle('checked', cb.checked));
+    cb.closest('.checkbox-item').classList.toggle('checked', cb.checked);
+  });
+};
+
+/* ===================== HELPERS ===================== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+/* ===================== MAIN ===================== */
+async function runSetupSupport() {
+  const apiKey = document.getElementById('apiKey').value.trim() || localStorage.getItem('anthropic_api_key');
+  if (!apiKey) { showError('APIキーを入力してください。'); return; }
+
+  const industry     = document.getElementById('industry').value;
+  const branch        = document.getElementById('branch').value;
+  const skillLevel    = document.getElementById('skillLevel').value;
+  const device        = document.getElementById('device').value;
+  const googleAccount = document.getElementById('googleAccount').value;
+  const gbpStatus     = document.getElementById('gbpStatus').value;
+  const aiExperience  = document.getElementById('aiExperience').value;
+  const concerns      = document.getElementById('concerns').value || '（特になし）';
+  const purposes      = Array.from(document.querySelectorAll('#purposeGrid input:checked')).map(cb => cb.value);
+  const timeBudget    = document.getElementById('timeBudget').value;
+  const costBudget    = document.getElementById('costBudget').value;
+  const goal          = document.getElementById('goal').value || '（未入力）';
+
+  if (purposes.length === 0) { showError('やりたいことを1つ以上選択してください。'); return; }
+
+  const skillMap = { beginner: 'パソコン・スマホ操作が苦手', basic: '基本操作はできる', confident: '得意なレベル' };
+  const deviceMap = { smartphone: 'スマホのみ', both: 'スマホとPC両方', pc: 'PC中心' };
+  const googleMap = { none: '事業用Googleアカウント未作成', personal: '個人用Googleアカウントのみ', business: '事業用Googleアカウント作成済み' };
+  const gbpMap = { none: 'GBP未登録', registered_idle: 'GBP登録済みだが放置', active: 'GBP運用中' };
+  const aiMap = { none: 'AIツール利用経験なし', heard: '名前を知っている程度', tried: 'ChatGPTなど少し使った経験あり', multiple: '複数のAIツールを使用中' };
+  const timeMap = { almost_none: 'ほとんど時間が取れない', '1h_week': '週1時間程度', '2_3h_week': '週2〜3時間', '5h_week': '週5時間以上' };
+  const costMap = { free: '無料ツールのみ希望', '1000': '月1,000円程度まで', '5000': '月5,000円程度まで', '10000': '月1万円以上も可' };
+
+  const prompt = `あなたは中小事業者向けのAI導入・初期設定サポートの専門コンサルタントです。
+ITに詳しくない事業者でも迷わず進められるよう、具体的でやさしい言葉でアドバイスしてください。
+以下の情報をもとに、ゼロからのAI導入・初期設定サポートプランをJSON形式で出力してください。
+
+【事業者情報】
+- 業種: ${industry}
+- 支部エリア: ${branch}
+- パソコン・スマホスキル: ${skillMap[skillLevel]}
+- 主な業務用デバイス: ${deviceMap[device]}
+
+【現在の状況】
+- Googleアカウント: ${googleMap[googleAccount]}
+- Googleビジネスプロフィール: ${gbpMap[gbpStatus]}
+- AIツール利用経験: ${aiMap[aiExperience]}
+- 困っていること・不安: ${concerns}
+
+【やりたいこと】
+${purposes.map(p => '- ' + p).join('\n')}
+
+【リソース】
+- かけられる時間: ${timeMap[timeBudget]}
+- 予算感: ${costMap[costBudget]}
+- 最終目標: ${goal}
+
+---
+
+以下のJSON形式でサポートプランを出力してください（前置きや説明は不要、JSONのみ）：
+
+{
+  "readiness": {
+    "level": "B",
+    "title": "基本の土台はあるが、AI活用はこれから",
+    "summary": "Googleアカウントはあるものの、GBPやAIツールの活用はまだこれからの段階です。順番に進めれば1ヶ月以内に実用レベルまで到達できます。"
+  },
+  "prep": [
+    {"status": "ok", "title": "Googleアカウント", "detail": "事業用アカウントが既にあるので、この後の設定がスムーズに進みます。"},
+    {"status": "warn", "title": "事業用メールアドレス", "detail": "個人アドレスのままだと混乱しやすいため、事業用アドレスの用意をおすすめします。"},
+    {"status": "ng", "title": "決済用クレジットカード", "detail": "有料AIツールを使う場合に必要です。法人/個人事業用のカードを1枚準備しておきましょう。"}
+  ],
+  "roadmap": [
+    {
+      "order": 1,
+      "tool": "Googleビジネスプロフィール（GBP）",
+      "icon": "🗺️",
+      "time": "30分",
+      "cost": "無料",
+      "why": "最初に整えるべき土台。ここが整っていないとAIで作った文章も活かせません。",
+      "steps": ["business.google.com にアクセスしてGoogleアカウントでログイン", "「ビジネスを管理」からビジネス名・業種・エリアを入力", "電話番号・営業時間・住所を登録し、オーナー確認（はがき/電話）を完了", "写真を5枚以上アップロードして基本情報を完成させる"]
+    },
+    {
+      "order": 2,
+      "tool": "Claude（Anthropic）またはChatGPT",
+      "icon": "🤖",
+      "time": "20分",
+      "cost": "無料プランあり",
+      "why": "口コミ返信や投稿文の作成を効率化する基本ツールです。",
+      "steps": ["claude.ai にアクセスしてメールアドレスで無料登録", "アカウント作成後、簡単な使い方（質問の入力方法）を確認", "本ツール群（口コミ返信・GBP投稿文ジェネレーター）と連携して使い始める"]
+    }
+  ],
+  "pitfalls": [
+    {"title": "最初から全部のツールを一気に導入しようとする", "detail": "情報量が多すぎて挫折しやすいです。まずは1つのツールを2週間使い倒し、慣れてから次に進みましょう。"},
+    {"title": "GBPのオーナー確認を後回しにする", "detail": "確認が完了しないとマップ上での表示や編集が制限されます。はがきが届いたらすぐにコードを入力しましょう。"}
+  ],
+  "plan": [
+    {"week": "第1週", "weekClass": "w1", "action": "Googleビジネスプロフィールの基本情報を完成させる", "goal": "プロフィール完成度80%以上"},
+    {"week": "第2週", "weekClass": "w2", "action": "AIツールに登録し、口コミ返信を1件試しに作成する", "goal": "AIツールの基本操作に慣れる"},
+    {"week": "第3週", "weekClass": "w3", "action": "Googleマップ投稿文をAIで作成し、週1回投稿する習慣をつける", "goal": "定期投稿の仕組み化"},
+    {"week": "第4週", "weekClass": "w4", "action": "この1ヶ月の運用を振り返り、次に導入するツールを決める", "goal": "継続できる運用ペースの確立"}
+  ],
+  "prompts": [
+    {"situation": "口コミへの返信文を作りたいとき", "prompt": "以下のGoogleマップの口コミに対して、丁寧でプロフェッショナルな返信文を200文字以内の日本語で作成してください。口コミ内容：「（ここに口コミ文を貼る）」"},
+    {"situation": "Googleマップの投稿文を作りたいとき", "prompt": "（業種名）の事業者として、Googleマップ投稿用の文章を300文字以内で3パターン作成してください。内容は（伝えたいこと）です。ハッシュタグも3つ提案してください。"}
+  ]
+}
+
+上記のJSONを実際の入力データに基づいて具体的に埋めて出力してください。readiness.levelはS/A/B/C/Dで、現状の準備度に応じて判定してください。prepは3〜5件、roadmapは選択された「やりたいこと」に対応する具体的なツールを3〜5個、各ツールのstepsは3〜5ステップで初心者にも分かるように記述してください。pitfallsは2〜4件、planは4週分、promptsは選択された「やりたいこと」に対応する質問テンプレートを3〜5件、実際にそのままAIに貼って使える具体的な文章にしてください。`;
+
+  hideError();
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('resultWrapper').classList.remove('show');
+  document.getElementById('genBtn').disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-20240307',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `APIエラー: ${res.status}`); }
+
+    const data = await res.json();
+    const raw = data.content[0].text;
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('レスポンスの解析に失敗しました');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    renderResult(parsed);
+    document.getElementById('resultWrapper').classList.add('show');
+    document.getElementById('resultWrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('genBtn').disabled = false;
+  }
+}
+
+/* ===================== RENDER ===================== */
+function renderResult(d) {
+  renderReadiness(d.readiness);
+  renderPrep(d.prep);
+  renderRoadmap(d.roadmap);
+  renderPitfalls(d.pitfalls);
+  renderPlan(d.plan);
+  renderPrompts(d.prompts);
+}
+
+function renderReadiness(r) {
+  if (!r) return;
+  const levelLabels = { S: 'S — ほぼ準備完了', A: 'A — 準備は順調', B: 'B — 基礎はこれから整える', C: 'C — まずは土台作りから', D: 'D — ゼロからのスタート' };
+  document.getElementById('readinessCircle').textContent = r.level || '-';
+  document.getElementById('readinessLevel').textContent = levelLabels[r.level] || (r.level + ' ランク');
+  document.getElementById('readinessTitle').textContent = r.title || '';
+  document.getElementById('readinessSummary').textContent = r.summary || '';
+}
+
+function renderPrep(items) {
+  const el = document.getElementById('prepItems');
+  el.innerHTML = '';
+  const iconMap = { ok: '✅', warn: '⚠️', ng: '❌' };
+  (items || []).forEach(item => {
+    el.innerHTML += `
+      <div class="check-item ${item.status}">
+        <span class="check-icon">${iconMap[item.status] || '•'}</span>
+        <div class="check-text">
+          <strong>${item.title}</strong>
+          <span>${item.detail}</span>
+        </div>
+      </div>`;
+  });
+}
+
+function renderRoadmap(items) {
+  const el = document.getElementById('roadmapItems');
+  el.innerHTML = '';
+  (items || []).forEach(item => {
+    const steps = (item.steps || []).map(s => `<li>${s}</li>`).join('');
+    el.innerHTML += `
+      <div class="roadmap-item">
+        <div class="roadmap-head">
+          <span class="roadmap-order">${item.order}</span>
+          <span class="tool-icon">${item.icon || '🛠️'}</span>
+          <h4>${item.tool}</h4>
+          <div class="roadmap-tags">
+            <span class="roadmap-tag">⏱ ${item.time || '-'}</span>
+            <span class="roadmap-tag">💰 ${item.cost || '-'}</span>
+          </div>
+        </div>
+        <p class="roadmap-why">${item.why || ''}</p>
+        <ol class="roadmap-steps">${steps}</ol>
+      </div>`;
+  });
+}
+
+function renderPitfalls(items) {
+  const el = document.getElementById('pitfallItems');
+  el.innerHTML = '';
+  (items || []).forEach(item => {
+    el.innerHTML += `
+      <div class="priority-item">
+        <span style="font-size:1.1rem;">⚠️</span>
+        <div class="priority-content">
+          <strong>${item.title}</strong>
+          <p>${item.detail}</p>
+        </div>
+      </div>`;
+  });
+}
+
+function renderPlan(items) {
+  const el = document.getElementById('planTableBody');
+  el.innerHTML = '';
+  (items || []).forEach(item => {
+    el.innerHTML += `
+      <tr>
+        <td><span class="week-badge ${item.weekClass}">${item.week}</span></td>
+        <td>${item.action}</td>
+        <td style="color:#555;">${item.goal}</td>
+      </tr>`;
+  });
+}
+
+function renderPrompts(items) {
+  const el = document.getElementById('promptItems');
+  el.innerHTML = '';
+  (items || []).forEach((p, i) => {
+    el.innerHTML += `
+      <div class="prompt-row">
+        <div class="prompt-situation">💬 ${p.situation}</div>
+        <div class="prompt-text-row">
+          <div class="prompt-text" id="promptText${i}">${p.prompt}</div>
+          <button class="prompt-copy-btn" onclick="copyPrompt(${i})">📋 コピー</button>
+        </div>
+      </div>`;
+  });
+}
+
+function copyPrompt(i) {
+  const text = document.getElementById('promptText' + i).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('コピーしました！'));
+}
+</script>
+</body>
+</html>
