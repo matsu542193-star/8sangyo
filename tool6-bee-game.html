@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <script>
+  (function(){
+     var PASS='8000';
+     var KEY='auth_8sangyo';
+     if(sessionStorage.getItem(KEY)!=='1'){
+          var overlay=document.createElement('div');
+          overlay.id='pw-overlay';
+          overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#1a2e4a;display:flex;align-items:center;justify-content:center;z-index:99999';
+          overlay.innerHTML='<div style="background:#fff;border-radius:16px;padding:40px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)"><div style="font-size:2.5rem;margin-bottom:12px">&#128272;</div><h2 style="color:#1a2e4a;font-family:sans-serif;margin-bottom:8px">MEO&#215;AIコンサルツール</h2><p style="color:#666;font-size:0.85rem;font-family:sans-serif;margin-bottom:20px">パスワードを入力してください</p><input id="pw-input" type="password" placeholder="パスワード" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;outline:none;box-sizing:border-box;margin-bottom:12px"><div id="pw-err" style="color:#c00;font-size:0.8rem;font-family:sans-serif;min-height:18px;margin-bottom:8px"></div><button id="pw-btn" style="width:100%;padding:12px;background:#d4a017;color:#1a2e4a;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;font-family:sans-serif">入る &#8594;</button></div>';
+          document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(overlay);document.getElementById('pw-input').focus();});
+          function checkPw(){var v=document.getElementById('pw-input').value;if(v===PASS){sessionStorage.setItem(KEY,'1');document.getElementById('pw-overlay').remove();}else{document.getElementById('pw-err').textContent='パスワードが違います';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}}
+          document.addEventListener('DOMContentLoaded',function(){document.getElementById('pw-btn').addEventListener('click',checkPw);document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')checkPw();});});
+     }
+  })();
+ </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>蜂駆除シミュレーター | MEO×AIコンサル</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f4f6fa; color: #1a2e4a; min-height: 100vh; -webkit-tap-highlight-color: transparent; }
+
+  header {
+    background: #1a2e4a;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+  header a.back { color: #a8c0d8; font-size: 0.8rem; text-decoration: none; }
+  header a.back:hover { color: #fff; }
+  header .badge { background: #d4a017; color: #1a2e4a; font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  .panel { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(26,46,74,0.08); padding: 24px; margin-bottom: 20px; }
+
+  .intro h2 { font-size: 1.25rem; margin-bottom: 10px; }
+  .intro p { font-size: 0.88rem; color: #555; line-height: 1.8; margin-bottom: 10px; }
+  .intro ul { font-size: 0.85rem; color: #555; line-height: 1.9; padding-left: 20px; margin-bottom: 16px; }
+  .intro .startBtn {
+    display: block; width: 100%; padding: 16px; background: #d4a017; color: #1a2e4a;
+    border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+  }
+  .intro .startBtn:active { transform: translateY(1px); }
+
+  .hud { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .hud .stat { background: #fff; border-radius: 10px; padding: 10px 16px; box-shadow: 0 2px 8px rgba(26,46,74,0.08); flex: 1; min-width: 100px; text-align: center; }
+  .hud .stat .label { font-size: 0.68rem; color: #888; }
+  .hud .stat .value { font-size: 1.15rem; font-weight: 700; color: #1a2e4a; }
+  .hud .stat.money .value { color: #b8860b; }
+  .hud .stat.hp .value { color: #c0392b; }
+
+  #field {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    min-height: 380px;
+    max-height: 520px;
+    background: linear-gradient(180deg, #cfe8ff 0%, #eaf6ff 55%, #d9edc9 55%, #bfe0a8 100%);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(26,46,74,0.12);
+    touch-action: manipulation;
+    user-select: none;
+  }
+  #field .cloud { position: absolute; font-size: 1.8rem; opacity: 0.8; pointer-events: none; }
+
+  .nest {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    animation: pop 0.18s ease-out;
+  }
+  @keyframes pop { from { transform: translate(-50%, -50%) scale(0.4); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+  .nest .emoji { font-size: 2.6rem; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.25)); }
+  .nest .price { font-size: 0.72rem; font-weight: 700; background: #1a2e4a; color: #fff; padding: 1px 8px; border-radius: 10px; white-space: nowrap; }
+  .nest.danger .price { background: #c0392b; }
+  .nest .timerbar { width: 44px; height: 4px; background: rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; }
+  .nest .timerbar i { display: block; height: 100%; background: #2ecc71; width: 100%; }
+  .nest.danger .timerbar i { background: #e67e22; }
+
+  .float-msg { position: absolute; font-weight: 700; font-size: 1rem; pointer-events: none; animation: rise 0.9s ease-out forwards; white-space: nowrap; }
+  @keyframes rise { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -50px); opacity: 0; } }
+
+  .shop { margin-top: 16px; }
+  .shop h3 { font-size: 1rem; margin-bottom: 10px; }
+  .shop-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eee; }
+  .shop-item:last-child { border-bottom: none; }
+  .shop-item .ic { font-size: 1.6rem; }
+  .shop-item .info { flex: 1; }
+  .shop-item .info .name { font-size: 0.88rem; font-weight: 700; }
+  .shop-item .info .desc { font-size: 0.75rem; color: #888; }
+  .shop-item .lv { font-size: 0.72rem; color: #d4a017; font-weight: 700; }
+  .shop-item button {
+    padding: 8px 14px; border-radius: 8px; border: none; background: #1a2e4a; color: #fff;
+    font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .shop-item button:disabled { background: #ccc; cursor: not-allowed; }
+
+  .result h2 { font-size: 1.3rem; margin-bottom: 14px; text-align: center; }
+  .result .earned { text-align: center; font-size: 2.1rem; font-weight: 700; color: #b8860b; margin-bottom: 4px; }
+  .result .sub { text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 18px; }
+  .result .breakdown { font-size: 0.85rem; color: #555; line-height: 2; margin-bottom: 18px; }
+  .result .breakdown span.v { float: right; font-weight: 700; color: #1a2e4a; }
+  .result .rank { text-align: center; font-size: 1rem; font-weight: 700; color: #1a2e4a; background: #fff8e1; border-radius: 10px; padding: 10px; margin-bottom: 18px; }
+  .result .actions { display: flex; gap: 10px; }
+  .result .actions button {
+    flex: 1; padding: 14px; border-radius: 10px; border: none; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+  }
+  .result .retryBtn { background: #d4a017; color: #1a2e4a; }
+  .result .homeBtn { background: #eee; color: #1a2e4a; }
+
+  .hidden { display: none !important; }
+
+  footer { text-align: center; padding: 24px; font-size: 0.78rem; color: #999; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐝 蜂駆除シミュレーター〜いくら稼げるか？〜</h1>
+  <a class="back" href="index.html">← ツール一覧へ</a>
+  <span class="badge">Tool 6</span>
+</header>
+
+<div class="container">
+
+  <!-- 説明画面 -->
+  <div class="panel intro" id="introScreen">
+    <h2>今日1日でいくら稼げる？</h2>
+    <p>次々と現れる蜂の巣をタップして駆除し、60秒でどれだけ稼げるかチャレンジ！稼いだお金で装備をアップグレードして、もっと効率よく稼ごう。</p>
+    <ul>
+      <li>🐝 小さい巣・中くらいの巣：タップするだけで報酬ゲット</li>
+      <li>🐝🔥 スズメバチ（危険な巣）：報酬は高いが、防護服レベルが低いと刺されてHPが減る</li>
+      <li>⏱ 巣は放置すると逃げてしまう（タイムバーが0になる前にタップ！）</li>
+      <li>💰 稼いだお金はショップで防護服・スプレー・広告にアップグレード可能</li>
+    </ul>
+    <button class="startBtn" id="startBtn">スタート（60秒チャレンジ）</button>
+  </div>
+
+  <!-- ゲーム画面 -->
+  <div id="gameScreen" class="hidden">
+    <div class="hud">
+      <div class="stat money"><div class="label">今日の売上</div><div class="value" id="hudMoney">¥0</div></div>
+      <div class="stat"><div class="label">残り時間</div><div class="value" id="hudTime">60</div></div>
+      <div class="stat hp"><div class="label">HP</div><div class="value" id="hudHp">100</div></div>
+    </div>
+    <div id="field"></div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div class="panel result hidden" id="resultScreen">
+    <h2>本日の営業終了！</h2>
+    <div class="earned" id="resultMoney">¥0</div>
+    <div class="sub">今日の売上</div>
+    <div class="breakdown" id="resultBreakdown"></div>
+    <div class="rank" id="resultRank"></div>
+    <div class="actions">
+      <button class="retryBtn" id="retryBtn">もう一度挑戦</button>
+      <button class="homeBtn" id="homeBtn">ショップへ</button>
+    </div>
+  </div>
+
+  <!-- ショップ画面 -->
+  <div class="panel shop hidden" id="shopScreen">
+    <h3>🛠 装備アップグレード（累計資金：<span id="shopBank">¥0</span>）</h3>
+    <div id="shopList"></div>
+    <button class="startBtn" style="margin-top:14px;" id="shopStartBtn">この装備で挑戦する</button>
+  </div>
+
+</div>
+
+<footer>
+  <strong>MEO×AI ツールズ by 蜂の巣駆除産業</strong><br>
+  運営：松木裕和（蜂の巣駆除産業）｜
+  <a href="https://8sangyo.com/" target="_blank" rel="noopener" style="color:#d4a017;">https://8sangyo.com/</a>｜
+  TEL：<a href="tel:07026706907" style="color:#d4a017;">070-2670-6907</a>
+</footer>
+
+<script>
+const STORAGE_KEY = 'bee_game_save_v1';
+
+const NEST_TYPES = [
+  { key: 'small',  emoji: '🐝',  label: '小さい巣',     min: 2000,  max: 5000,  life: 2600, danger: false, weight: 40 },
+  { key: 'medium', emoji: '🐝',  label: '中くらいの巣', min: 5000,  max: 12000, life: 2200, danger: false, weight: 30 },
+  { key: 'large',  emoji: '🐝',  label: '大きな巣',     min: 12000, max: 25000, life: 1900, danger: false, weight: 15 },
+  { key: 'hornet', emoji: '🐝🔥', label: 'スズメバチ',   min: 25000, max: 60000, life: 1600, danger: true,  weight: 15 },
+];
+
+const SUITS = [
+  { name: '軍手のみ',       protect: 0 },
+  { name: '簡易防護服',     protect: 25 },
+  { name: '本格防護服',     protect: 55 },
+  { name: 'プロ仕様耐熱服', protect: 85 },
+];
+const SPRAYS = [
+  { name: '家庭用スプレー', bonus: 0 },
+  { name: '業務用スプレー', bonus: 15 },
+  { name: '強力ジェット式', bonus: 30 },
+  { name: 'プロ仕様噴射器', bonus: 50 },
+];
+const ADS = [
+  { name: '広告なし',       spawnBoost: 0 },
+  { name: 'チラシ配布',     spawnBoost: 15 },
+  { name: '地域情報誌掲載', spawnBoost: 30 },
+  { name: 'MEO×AI集客',     spawnBoost: 50 },
+];
+const UPGRADE_COST = [0, 30000, 80000, 180000];
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      return { bank: s.bank || 0, suitLv: s.suitLv || 0, sprayLv: s.sprayLv || 0, adLv: s.adLv || 0, best: s.best || 0 };
+    }
+  } catch (e) {}
+  return { bank: 0, suitLv: 0, sprayLv: 0, adLv: 0, best: 0 };
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+const introScreen = document.getElementById('introScreen');
+const gameScreen = document.getElementById('gameScreen');
+const resultScreen = document.getElementById('resultScreen');
+const shopScreen = document.getElementById('shopScreen');
+const field = document.getElementById('field');
+const hudMoney = document.getElementById('hudMoney');
+const hudTime = document.getElementById('hudTime');
+const hudHp = document.getElementById('hudHp');
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('retryBtn').addEventListener('click', () => { renderShop(); showScreen(shopScreen); });
+document.getElementById('homeBtn').addEventListener('click', () => { renderShop(); showScreen(shopScreen); });
+document.getElementById('shopStartBtn').addEventListener('click', startGame);
+
+function showScreen(el) {
+  [introScreen, gameScreen, resultScreen, shopScreen].forEach(s => s.classList.add('hidden'));
+  el.classList.remove('hidden');
+}
+
+function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
+
+function renderShop() {
+  document.getElementById('shopBank').textContent = fmt(state.bank);
+  const list = document.getElementById('shopList');
+  list.innerHTML = '';
+  const items = [
+    { key: 'suitLv', icon: '🦺', title: '防護服', data: SUITS, sub: (d) => `刺傷ダメージ ${d.protect}% カット` },
+    { key: 'sprayLv', icon: '🧴', title: '殺虫スプレー', data: SPRAYS, sub: (d) => `駆除報酬 +${d.bonus}%` },
+    { key: 'adLv', icon: '📣', title: '集客広告', data: ADS, sub: (d) => `巣の出現数 +${d.spawnBoost}%` },
+  ];
+  items.forEach(item => {
+    const lv = state[item.key];
+    const cur = item.data[lv];
+    const next = item.data[lv + 1];
+    const row = document.createElement('div');
+    row.className = 'shop-item';
+    const nextCost = next ? UPGRADE_COST[lv + 1] : null;
+    row.innerHTML = `
+      <div class="ic">${item.icon}</div>
+      <div class="info">
+        <div class="name">${item.title}：${cur.name} <span class="lv">Lv.${lv + 1}</span></div>
+        <div class="desc">${item.sub(cur)}${next ? ` → 次: ${next.name}（${item.sub(next)}）` : '（最大レベル）'}</div>
+      </div>
+      <button ${!next || state.bank < nextCost ? 'disabled' : ''} data-key="${item.key}">
+        ${next ? `${fmt(nextCost)}で強化` : 'MAX'}
+      </button>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('button[data-key]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-key');
+      const lv = state[key];
+      const cost = UPGRADE_COST[lv + 1];
+      if (state.bank >= cost) {
+        state.bank -= cost;
+        state[key] = lv + 1;
+        saveState();
+        renderShop();
+      }
+    });
+  });
+}
+
+let gameTimer = null;
+let spawnTimer = null;
+let timeLeft = 60;
+let money = 0;
+let hp = 100;
+let hits = 0, escapes = 0, stings = 0;
+let activeNests = new Map();
+let nestSeq = 0;
+
+function startGame() {
+  timeLeft = 60;
+  money = 0;
+  hp = 100;
+  hits = 0; escapes = 0; stings = 0;
+  activeNests.clear();
+  field.innerHTML = '';
+  hudMoney.textContent = fmt(0);
+  hudTime.textContent = timeLeft;
+  hudHp.textContent = hp;
+  showScreen(gameScreen);
+  spawnClouds();
+
+  gameTimer = setInterval(() => {
+    timeLeft--;
+    hudTime.textContent = timeLeft;
+    if (timeLeft <= 0 || hp <= 0) endGame();
+  }, 1000);
+
+  scheduleSpawn();
+}
+
+function spawnClouds() {
+  for (let i = 0; i < 3; i++) {
+    const c = document.createElement('div');
+    c.className = 'cloud';
+    c.textContent = '☁️';
+    c.style.left = (10 + i * 30) + '%';
+    c.style.top = (8 + i * 6) + '%';
+    field.appendChild(c);
+  }
+}
+
+function scheduleSpawn() {
+  const adBoost = ADS[state.adLv].spawnBoost / 100;
+  const baseDelay = 950 / (1 + adBoost);
+  spawnTimer = setTimeout(() => {
+    if (timeLeft > 0 && hp > 0) {
+      spawnNest();
+      scheduleSpawn();
+    }
+  }, baseDelay + Math.random() * 500);
+}
+
+function pickType() {
+  const totalWeight = NEST_TYPES.reduce((s, t) => s + t.weight, 0);
+  let r = Math.random() * totalWeight;
+  for (const t of NEST_TYPES) {
+    if (r < t.weight) return t;
+    r -= t.weight;
+  }
+  return NEST_TYPES[0];
+}
+
+function spawnNest() {
+  if (activeNests.size >= 6) return;
+  const type = pickType();
+  const id = 'n' + (nestSeq++);
+  const x = 10 + Math.random() * 80;
+  const y = 22 + Math.random() * 66;
+  const reward = Math.round(type.min + Math.random() * (type.max - type.min));
+
+  const el = document.createElement('div');
+  el.className = 'nest' + (type.danger ? ' danger' : '');
+  el.style.left = x + '%';
+  el.style.top = y + '%';
+  el.innerHTML = `
+    <div class="emoji">${type.emoji}</div>
+    <div class="price">${fmt(reward)}</div>
+    <div class="timerbar"><i></i></div>
+  `;
+  field.appendChild(el);
+
+  const bar = el.querySelector('.timerbar i');
+  const start = performance.now();
+  const life = type.life;
+  let raf;
+  function tick(now) {
+    const pct = Math.max(0, 1 - (now - start) / life);
+    bar.style.width = (pct * 100) + '%';
+    if (pct <= 0) {
+      removeNest(id, true);
+      return;
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  raf = requestAnimationFrame(tick);
+
+  el.addEventListener('click', () => resolveNest(id));
+  el.addEventListener('touchstart', (e) => { e.preventDefault(); resolveNest(id); }, { passive: false });
+
+  activeNests.set(id, { el, type, reward, raf });
+}
+
+function removeNest(id, escaped) {
+  const n = activeNests.get(id);
+  if (!n) return;
+  cancelAnimationFrame(n.raf);
+  n.el.remove();
+  activeNests.delete(id);
+  if (escaped) escapes++;
+}
+
+function resolveNest(id) {
+  const n = activeNests.get(id);
+  if (!n) return;
+  const type = n.type;
+
+  if (type.danger) {
+    const protect = SUITS[state.suitLv].protect / 100;
+    const stungChance = Math.max(0.08, 0.65 - protect * 0.7);
+    if (Math.random() < stungChance) {
+      stings++;
+      const dmg = Math.round(18 * (1 - protect * 0.5));
+      hp = Math.max(0, hp - dmg);
+      hudHp.textContent = hp;
+      floatMsg(n.el, `-${dmg} HP 刺された！`, '#c0392b');
+      removeNest(id, false);
+      if (hp <= 0) endGame();
+      return;
+    }
+  }
+
+  const sprayBonus = SPRAYS[state.sprayLv].bonus / 100;
+  const reward = Math.round(n.reward * (1 + sprayBonus));
+  money += reward;
+  hits++;
+  hudMoney.textContent = fmt(money);
+  floatMsg(n.el, `+${fmt(reward)}`, '#2ecc71');
+  removeNest(id, false);
+}
+
+function floatMsg(anchorEl, text, color) {
+  const msg = document.createElement('div');
+  msg.className = 'float-msg';
+  msg.textContent = text;
+  msg.style.color = color;
+  msg.style.left = anchorEl.style.left;
+  msg.style.top = anchorEl.style.top;
+  field.appendChild(msg);
+  setTimeout(() => msg.remove(), 900);
+}
+
+function endGame() {
+  clearInterval(gameTimer);
+  clearTimeout(spawnTimer);
+  activeNests.forEach((n, id) => removeNest(id, false));
+
+  state.bank += money;
+  const isNewBest = money > state.best;
+  if (isNewBest) state.best = money;
+  saveState();
+
+  document.getElementById('resultMoney').textContent = fmt(money);
+  document.getElementById('resultBreakdown').innerHTML = `
+    駆除件数 <span class="v">${hits}件</span><br>
+    逃げられた巣 <span class="v">${escapes}件</span><br>
+    刺された回数 <span class="v">${stings}回</span><br>
+    自己ベスト <span class="v">${fmt(state.best)}</span>
+  `;
+
+  let rankText;
+  if (money >= 500000) rankText = '🏆 伝説の駆除職人！独立開業レベル';
+  else if (money >= 300000) rankText = '🥇 ベテラン駆除業者';
+  else if (money >= 150000) rankText = '🥈 一人前の職人';
+  else if (money >= 60000) rankText = '🥉 見習い駆除人';
+  else rankText = '🔰 まだまだ修行中';
+  if (isNewBest) rankText += '（自己ベスト更新！）';
+  document.getElementById('resultRank').textContent = rankText;
+
+  showScreen(resultScreen);
+}
+</script>
+</body>
+</html>
