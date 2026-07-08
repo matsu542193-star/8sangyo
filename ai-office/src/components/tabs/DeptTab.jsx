@@ -50,6 +50,16 @@ export default function DeptTab({ openId, onOpened }) {
             </button>
             {isOpen && (
               <div className="mt-3 pt-3 border-t border-ink/10">
+                <div className="flex items-center gap-2 bg-washi rounded-lg p-2.5 mb-3">
+                  <span className="text-2xl">{d.employee.emoji}</span>
+                  <div>
+                    <div className="text-sm font-bold">
+                      {d.employee.name}
+                      <span className="text-ink/50 font-normal">({d.employee.animal})</span>
+                    </div>
+                    <div className="text-[11px] text-ink/60 leading-snug">{d.employee.trait}</div>
+                  </div>
+                </div>
                 <button
                   onClick={() => handleCopy(d.instruction)}
                   className="app-btn-primary mb-3 text-xs"

@@ -1,4 +1,4 @@
-import { hisho, orgDepts } from '../../data/portalData';
+import { hisho, hiro, orgDepts } from '../../data/portalData';
 
 function VLine({ h = 18 }) {
   return <div className="w-px bg-ink/25 mx-auto" style={{ height: h }} />;
@@ -16,13 +16,27 @@ function Branch() {
   );
 }
 
+function EmployeeBadge({ employee }) {
+  return (
+    <div className="app-badge bg-amber/10 text-amber mt-1.5 inline-flex items-center gap-1">
+      <span>{employee.emoji}</span>
+      <span>
+        {employee.name}({employee.animal})
+      </span>
+    </div>
+  );
+}
+
 export default function OrgTab({ onOpenDept }) {
   return (
     <div className="p-4 max-w-app mx-auto flex flex-col gap-6">
       <div className="flex flex-col items-center">
         <div className="app-card text-center w-full max-w-[220px] border-2 border-amber/40">
-          <div className="text-3xl">👤</div>
-          <div className="font-bold mt-1">ヒロ(代表)</div>
+          <div className="text-3xl">{hiro.emoji}</div>
+          <div className="font-bold mt-1">
+            {hiro.name}({hiro.role})
+          </div>
+          <div className="app-badge bg-amber/10 text-amber mt-1.5">{hiro.animal}タイプ</div>
         </div>
 
         <VLine />
@@ -34,6 +48,7 @@ export default function OrgTab({ onOpenDept }) {
           <div className="text-3xl">{hisho.icon}</div>
           <div className="font-bold mt-1">{hisho.name}</div>
           <div className="text-xs text-ink/60 mt-0.5">{hisho.desc}</div>
+          <EmployeeBadge employee={hisho.employee} />
         </button>
 
         <Branch />
@@ -48,6 +63,7 @@ export default function OrgTab({ onOpenDept }) {
               <div className="text-2xl">{d.icon}</div>
               <div className="font-bold text-sm mt-1">{d.name}</div>
               <div className="text-[11px] text-ink/60 mt-0.5">{d.desc}</div>
+              <EmployeeBadge employee={d.employee} />
             </button>
           ))}
         </div>
