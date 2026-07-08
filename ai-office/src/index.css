@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f3efe6;
+  color: #2a261f;
+  font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .app-card {
+    @apply bg-white rounded-card shadow-sm p-4;
+  }
+  .app-btn {
+    @apply inline-flex items-center justify-center gap-1 rounded-lg px-4 py-2 font-bold text-sm transition active:scale-[0.98];
+  }
+  .app-btn-primary {
+    @apply app-btn bg-amber text-white;
+  }
+  .app-btn-secondary {
+    @apply app-btn bg-white text-ink border border-ink/15;
+  }
+  .app-btn-danger {
+    @apply app-btn bg-warn text-white;
+  }
+  .app-input {
+    @apply w-full rounded-lg border border-ink/20 px-3 py-2 text-sm outline-none focus:border-amber bg-white;
+  }
+  .app-label {
+    @apply block text-xs font-bold text-ink/70 mb-1;
+  }
+  .app-badge {
+    @apply inline-block rounded-full px-2 py-0.5 text-[11px] font-bold;
+  }
+}
+
+/* 印刷ビュー以外は印刷しない */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #invoice-print-view,
+  #invoice-print-view * {
+    visibility: visible;
+  }
+  #invoice-print-view {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+}
