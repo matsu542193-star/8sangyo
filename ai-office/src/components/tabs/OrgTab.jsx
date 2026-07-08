@@ -1,35 +1,56 @@
 import { hisho, orgDepts } from '../../data/portalData';
 
+function VLine({ h = 18 }) {
+  return <div className="w-px bg-ink/25 mx-auto" style={{ height: h }} />;
+}
+
+// ヒロ→秘書AIの下で6部署へ枝分かれする接続線(組織図のツリー表現)
+function Branch() {
+  return (
+    <div className="relative w-full h-8">
+      <div className="absolute left-1/2 -translate-x-1/2 top-0 w-px h-4 bg-ink/25" />
+      <div className="absolute left-[16.66%] right-[16.66%] top-4 h-px bg-ink/25" />
+      <div className="absolute left-[16.66%] -translate-x-1/2 top-4 w-px h-4 bg-ink/25" />
+      <div className="absolute right-[16.66%] translate-x-1/2 top-4 w-px h-4 bg-ink/25" />
+    </div>
+  );
+}
+
 export default function OrgTab({ onOpenDept }) {
   return (
-    <div className="p-4 max-w-app mx-auto flex flex-col gap-4">
-      <div className="app-card text-center">
-        <div className="text-3xl">👤</div>
-        <div className="font-bold mt-1">ヒロ(代表)</div>
-      </div>
-      <div className="text-center text-ink/40">↓</div>
-      <button
-        onClick={() => onOpenDept(hisho.id)}
-        className="app-card text-center hover:border-amber border border-transparent"
-      >
-        <div className="text-3xl">{hisho.icon}</div>
-        <div className="font-bold mt-1">{hisho.name}</div>
-        <div className="text-xs text-ink/60 mt-0.5">{hisho.desc}</div>
-      </button>
-      <div className="text-center text-ink/40">↓</div>
+    <div className="p-4 max-w-app mx-auto flex flex-col gap-6">
+      <div className="flex flex-col items-center">
+        <div className="app-card text-center w-full max-w-[220px] border-2 border-amber/40">
+          <div className="text-3xl">👤</div>
+          <div className="font-bold mt-1">ヒロ(代表)</div>
+        </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        {orgDepts.map((d) => (
-          <button
-            key={d.id}
-            onClick={() => onOpenDept(d.id)}
-            className="app-card text-center hover:border-amber border border-transparent"
-          >
-            <div className="text-2xl">{d.icon}</div>
-            <div className="font-bold text-sm mt-1">{d.name}</div>
-            <div className="text-[11px] text-ink/60 mt-0.5">{d.desc}</div>
-          </button>
-        ))}
+        <VLine />
+
+        <button
+          onClick={() => onOpenDept(hisho.id)}
+          className="app-card text-center w-full max-w-[260px] hover:border-amber border border-transparent transition"
+        >
+          <div className="text-3xl">{hisho.icon}</div>
+          <div className="font-bold mt-1">{hisho.name}</div>
+          <div className="text-xs text-ink/60 mt-0.5">{hisho.desc}</div>
+        </button>
+
+        <Branch />
+
+        <div className="grid grid-cols-2 gap-3 w-full">
+          {orgDepts.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => onOpenDept(d.id)}
+              className="app-card text-center hover:border-amber border border-transparent transition relative before:content-[''] before:absolute before:-top-3 before:left-1/2 before:-translate-x-1/2 before:w-px before:h-3 before:bg-ink/25"
+            >
+              <div className="text-2xl">{d.icon}</div>
+              <div className="font-bold text-sm mt-1">{d.name}</div>
+              <div className="text-[11px] text-ink/60 mt-0.5">{d.desc}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="app-card">
